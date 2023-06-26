@@ -1,0 +1,99 @@
+-- Creación de la tabla TIENDA
+CREATE TABLE tabla_TIENDA (
+    codigo_tienda INT PRIMARY KEY,
+    nombre_tienda VARCHAR(255)
+);
+
+-- Creación de la tabla BEBIDA
+CREATE TABLE tabla_BEBIDA (
+    codigo_bebida INT PRIMARY KEY,
+    nombre_bebida VARCHAR(255)
+);
+
+-- Creación de la tabla BEBEDOR
+CREATE TABLE tabla_BEBEDOR (
+    cedula BIGINT PRIMARY KEY,
+    nombre VARCHAR(255)
+);
+
+-- Creación de la tabla GUSTA
+CREATE TABLE tabla_GUSTA (
+    cedula BIGINT,
+    codigo_bebida INT,
+    PRIMARY KEY (cedula, codigo_bebida),
+    FOREIGN KEY (cedula) REFERENCES tabla_BEBEDOR(cedula),
+    FOREIGN KEY (codigo_bebida) REFERENCES tabla_BEBIDA(codigo_bebida)
+);
+
+-- Creación de la tabla FRECUENTA
+CREATE TABLE tabla_FRECUENTA (
+    cedula BIGINT,
+    codigo_tienda INT,
+    PRIMARY KEY (cedula, codigo_tienda),
+    FOREIGN KEY (cedula) REFERENCES tabla_BEBEDOR(cedula),
+    FOREIGN KEY (codigo_tienda) REFERENCES tabla_TIENDA(codigo_tienda)
+);
+
+-- Creación de la tabla VENDE
+CREATE TABLE tabla_VENDE (
+    codigo_tienda INT,
+    codigo_bebida INT,
+    precio FLOAT,
+    FOREIGN KEY (codigo_tienda) REFERENCES tabla_TIENDA(codigo_tienda),
+    FOREIGN KEY (codigo_bebida) REFERENCES tabla_BEBIDA(codigo_bebida)
+);
+
+------------------------------------------------------------------------------------
+
+SELECT B.nombre
+FROM BEBEDOR B
+LEFT JOIN GUSTA G ON B.cedula = G.cedula
+LEFT JOIN BEBIDA BD ON G.codigo_bebida = BD.codigo_bebida
+WHERE BD.nombre_bebida IS NULL OR BD.nombre_bebida <> 'colombiana';
+
+
+SELECT T.nombre_tienda
+FROM TIENDA T
+LEFT JOIN FRECUENTA F ON T.codigo_tienda = F.codigo_tienda
+LEFT JOIN BEBEDOR B ON F.cedula = B.cedula
+WHERE B.nombre <> 'Andres Camilo Restrepo' OR B.nombre IS NULL;
+
+
+SELECT B.nombre
+FROM BEBEDOR B
+INNER JOIN GUSTA G ON B.cedula = G.cedula
+INNER JOIN FRECUENTA F ON B.cedula = F.cedula;
+
+
+SELECT B.nombre, BD.nombre_bebida
+FROM BEBEDOR B
+CROSS JOIN BEBIDA BD
+LEFT JOIN GUSTA G ON B.cedula = G.cedula AND BD.codigo_bebida = G.codigo_bebida
+WHERE G.codigo_bebida IS NULL;
+
+
+SELECT B.nombre
+FROM BEBEDOR B
+INNER JOIN FRECUENTA F ON B.cedula = F.cedula
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM FRECUENTA F2
+    INNER JOIN BEBEDOR B2 ON F2.cedula = B2.cedula
+    WHERE B2.nombre = 'Luis Perez' AND F2.codigo_tienda <> F.codigo_tienda
+);
+
+SELECT B.nombre
+FROM BEBEDOR B
+INNER JOIN GUSTA G ON B.cedula = G.cedula
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM FRECUENTA F
+    LEFT JOIN VENDE V ON F.codigo_tienda = V.codigo_tienda
+    LEFT JOIN GUSTA G2 ON V.codigo_bebida = G2.codigo_bebida
+    WHERE F.cedula = B.cedula AND G2.cedula <> B.cedula
+);
+
+SELECT codigo_tienda, nombre_tienda FROM tabla_TIENDA;
+SELECT * FROM tabla_TIENDA WHERE codigo_tienda > 100;
+
+
